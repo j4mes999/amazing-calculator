@@ -1,0 +1,30 @@
+h1{
+    text-align: center;
+}
+
+.calculator{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.key-board{
+    width: 155px;
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    gap: 2px;
+}
+
+.key{
+    width: 35px;
+    height: 35px;   
+}
+
+.screen{
+    border: 1px solid black;
+    margin-bottom: 5px;
+    width: 150px;
+    height: 18px;
+    text-align: right;
+}
