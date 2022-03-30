@@ -69,75 +69,84 @@ function operate(operator, num1, num2){
  */
 function clearContent(){
     screen.textContent = "";
-    displayContent = "";
+    opStack = [];
+    numStack = [];
+    output = "";
+    input = "";
+    auxScreen.textContent = "";
 }
+
 
 /**
  * 
- * @param {string} key 
- * @returns true if key is an operator 
+ * Draws in the aux screen the content of the stacks 
  */
-function isOperator(key){
-    if(key == DIV || key == MUL || key == ADD || key == SUB) return true;
-    else return false;
-}
-
-/**
- * Calls the operate function with the correct
- * parameters
- * @param {string} content 
- */
-function callOperate(content){
-    const array = content.split(" ");
-    screen.textContent = operate(array[1], parseInt(array[0]), parseInt(array[2]));
-}
-
-/**
- * returns how many operands has exp
- * @param {string} exp 
- */
-function getNumberOperands(exp){
-    const array = exp.split(" ");
-    return array.length <= 2 ? 1 : 2;
+function drawAuxScreen(){
+    if(numStack.length >= 1 && opStack.length >= 1)
+      auxScreen.textContent = numStack[0] + " " + opStack[0]; 
 }
 
 //Event Listeners
 
-const keys = document.querySelectorAll(".key");
-const screen = document.querySelector(".screen");
-let displayContent = "";
-let flag = false;
-//for tomorrow: separate digits and operators
-//create a stack and record all the events, when press
-//a digit validate the last event, if e = result reset
-//screen content and continue, otherwise continue normally
-keys.forEach(key => key.addEventListener("click", () => {
-    
-    if(isOperator(key.textContent)){
-        if(getNumberOperands(displayContent) == 1){
-            displayContent += " " +key.textContent +" ";
-            screen.textContent = "";
-            console.log("1 operand");
-        }else{
-          flag = true;
-          callOperate(displayContent);
-          displayContent = screen.textContent + " " +key.textContent +" ";
-          console.log("2 operand");
-        }
-    }else if(flag){
-        screen.textContent = key.textContent;
-        displayContent += key.textContent;
-        flag = false;
-    }else{
-        screen.textContent += key.textContent;
-        displayContent += key.textContent;
-    }
-    console.log(displayContent);
+const digits = document.querySelectorAll(".key.digit");
+const operators = document.querySelectorAll(".key.operator");
+const screen = document.querySelector(".user-input");
+const auxScreen = document.querySelector(".aux-screen");
+
+let opStack = []; // stack where the operator will be store
+let numStack = []; // stack where the operands will be store
+let input = "";
+let output = "";
+
+//Event listener when a digit is pressed
+digits.forEach(key => key.addEventListener("click", () => {
+    input += key.textContent;
+    screen.textContent = input;  
 }));
 
-const equalKey = document.querySelector(".key-equal");
-equalKey.addEventListener( "click", () => callOperate(displayContent));
+//Event listener when an operator key is pressed
+operators.forEach(key => key.addEventListener("click", () =>{
+    
+    console.log("numStack out: "+numStack + " opStack out: "+opStack +
+                 " input: " + input);
+    if( numStack.length == 0 && input !== ""){
+      input = screen.textContent;  
+      numStack.push(parseFloat(input));
+      opStack.push(key.textContent);
+      console.log("numStack: "+numStack + " opStack: "+opStack);
+      drawAuxScreen();  
+      input = "";
+    }else if(numStack.length == 1 && input !== ""){
+        input = screen.textContent;
+        output = operate(opStack.pop(), numStack.pop(), parseFloat(input));
+        screen.textContent = output;
+        opStack.push(key.textContent);
+        numStack.push(parseFloat(output));
+        drawAuxScreen();
+        console.log("numStack2: "+numStack + " opStack2: "+opStack);
+        input = "";
+        output = "";
+    }else if(numStack.length == 0 && opStack.length == 0 && input === "" && screen.textContent !== ""){
+        input = screen.textContent;
+        numStack.push(parseFloat(input));
+        opStack.push(key.textContent);
+        drawAuxScreen();
+        input = "";
+    }
+}));
 
-const clearKey = document.querySelector(".key-clear");
+//event listener when the equals key is pressed
+const equalKey = document.querySelector(".equal");
+equalKey.addEventListener( "click", () => {
+  if(numStack.length >= 1){
+    output = operate(opStack.pop(), numStack.pop(), parseFloat(screen.textContent));
+    screen.textContent = output;
+    auxScreen.textContent = output;
+    output = "";
+    input = ""; //if 2 x 3 = 6 and then type a number, 6 is lost and works fine, if commented after pressing = and number both values concat
+  }
+});
+
+const clearKey = document.querySelector(".clear");
 clearKey.addEventListener( "click", () => clearContent());
 
